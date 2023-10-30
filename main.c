@@ -6,10 +6,12 @@
 
 #define POOL_SIZE 3
 
-typedef struct {
-  void *function;
+struct work {
+  void *(*function)(void);
   struct work *next;
-} work;
+};
+
+typedef struct work work_t;
 
 struct testWork {
   int id;
@@ -19,7 +21,7 @@ struct testWork {
 typedef struct testWork testWork_t;
 
 typedef struct {
-  struct testWork *workQueuePtr;
+  work_t *workQueuePtr;
   pthread_mutex_t workMutex;
   pthread_t threadQueue[POOL_SIZE];
 } threadPool;
@@ -27,19 +29,24 @@ typedef struct {
 void *threadPoolRoutine(void *arg) {
   threadPool *pool = (threadPool *)arg;
 
+  // TODO: use pthread_cond_signal to avoid this
   while (1) {
     usleep(20);
     pthread_mutex_lock(&(pool->workMutex));
 
-    if (pool->workQueuePtr != NULL) {
-      testWork_t job = *(pool->workQueuePtr);
-      pool->workQueuePtr = job.next;
-      printf("thread:%d int:%d\n", (int)pthread_self(), job.id);
-    } else {
-      // printf("%s\n", "no jobs available");
+    if (pool->workQueuePtr == NULL) {
+      pthread_mutex_unlock(
+          &(pool->workMutex)); // TODO: this is also sort of bad but it would be
+                               // fixed by a signal
+      continue;
     }
 
+    work_t job = *(pool->workQueuePtr);
+    pool->workQueuePtr = job.next;
+
     pthread_mutex_unlock(&(pool->workMutex));
+
+    job.function();
   }
   return NULL;
 }
@@ -60,23 +67,30 @@ int threadPoolRun(threadPool *tp) {
   return EXIT_SUCCESS;
 }
 
+void *w() {
+  printf("this is happening wooo\n");
+  sleep(3);
+  printf("wimwamwimwamwimwam\n");
+  return NULL;
+}
+
 int main() {
   threadPool testPool;
 
-  testWork_t d;
-  d.id = 4;
+  work_t d;
+  d.function = w;
   d.next = NULL;
 
-  testWork_t c;
-  c.id = 3;
+  work_t c;
+  c.function = w;
   c.next = &d;
 
-  testWork_t b;
-  b.id = 2;
+  work_t b;
+  b.function = w;
   b.next = &c;
 
-  testWork_t a;
-  a.id = 1;
+  work_t a;
+  a.function = w;
   a.next = &b;
 
   threadPoolCreate(&testPool);
