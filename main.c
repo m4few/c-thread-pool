@@ -4,7 +4,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define POOL_SIZE 3
+#define POOL_SIZE 2
 
 struct work {
   void *(*function)(void);
@@ -93,10 +93,12 @@ int main() {
   a.function = w;
   a.next = &b;
 
+  printf("befooooore\n");
   threadPoolCreate(&testPool);
   testPool.workQueuePtr = &a;
-
+  printf("2!\n");
   threadPoolRun(&testPool);
+  printf("oh yeah execution is not blocked L>>>\n");
 
   return EXIT_SUCCESS;
 }
