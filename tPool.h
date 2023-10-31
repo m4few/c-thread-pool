@@ -5,8 +5,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define POOL_SIZE 3
-
 struct work {
   void *(*function)(void);
   struct work *next;
@@ -17,12 +15,13 @@ typedef struct work work_t;
 struct threadPool {
   work_t *workQueuePtr;
   pthread_mutex_t workMutex;
-  pthread_t threadQueue[POOL_SIZE];
+  int threadCount;
+  pthread_t *threadQueue;
 };
 
 typedef struct threadPool threadPool;
 
 void *threadPoolRoutine(void *arg);
-int threadPoolCreate(threadPool *tp);
+int threadPoolCreate(threadPool *tp, int n);
 int threadPoolRun(threadPool *tp);
 int threadPoolEnqueue(threadPool *tp, work_t *w);

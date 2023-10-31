@@ -26,9 +26,11 @@ void *threadPoolRoutine(void *arg) {
   return NULL;
 }
 
-int threadPoolCreate(threadPool *tp) {
+int threadPoolCreate(threadPool *tp, int n) {
   pthread_t thread;
-  for (int i = 0; i < POOL_SIZE; i++) {
+  tp->threadCount = n;
+  tp->threadQueue = malloc(sizeof(pthread_t) * tp->threadCount);
+  for (int i = 0; i < tp->threadCount; i++) {
     tp->threadQueue[i] = thread;
     pthread_create(tp->threadQueue + i, NULL, threadPoolRoutine, tp);
   }
@@ -36,7 +38,7 @@ int threadPoolCreate(threadPool *tp) {
 }
 
 int threadPoolRun(threadPool *tp) {
-  for (int i = 0; i < POOL_SIZE; i++) {
+  for (int i = 0; i < tp->threadCount; i++) {
     pthread_join(tp->threadQueue[i], NULL);
   }
   return EXIT_SUCCESS;
