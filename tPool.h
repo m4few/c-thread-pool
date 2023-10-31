@@ -14,12 +14,15 @@ struct work {
 
 typedef struct work work_t;
 
-typedef struct {
+struct threadPool {
   work_t *workQueuePtr;
   pthread_mutex_t workMutex;
   pthread_t threadQueue[POOL_SIZE];
-} threadPool;
+};
+
+typedef struct threadPool threadPool;
 
 void *threadPoolRoutine(void *arg);
 int threadPoolCreate(threadPool *tp);
 int threadPoolRun(threadPool *tp);
+int threadPoolEnqueue(threadPool *tp, work_t *w);

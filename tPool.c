@@ -1,4 +1,5 @@
 #include "tPool.h"
+#include <stdlib.h>
 
 void *threadPoolRoutine(void *arg) {
   threadPool *pool = (threadPool *)arg;
@@ -36,8 +37,24 @@ int threadPoolCreate(threadPool *tp) {
 
 int threadPoolRun(threadPool *tp) {
   for (int i = 0; i < POOL_SIZE; i++) {
-    printf("%s\n", "oh man");
     pthread_join(tp->threadQueue[i], NULL);
   }
+  return EXIT_SUCCESS;
+}
+
+int threadPoolEnqueue(threadPool *tp, work_t *w) {
+
+  if (tp->workQueuePtr == NULL) {
+    tp->workQueuePtr = w;
+    return EXIT_SUCCESS;
+  }
+
+  work_t *node = tp->workQueuePtr;
+  while (node->next != NULL) {
+    node = node->next;
+  }
+
+  node->next = w;
+
   return EXIT_SUCCESS;
 }
