@@ -1,4 +1,5 @@
 #include "tPool.h"
+#include <pthread.h>
 #include <stdlib.h>
 
 void *threadPoolRoutine(void *arg) {
@@ -30,6 +31,9 @@ int threadPoolCreate(threadPool *tp, int n) {
   pthread_t thread;
   tp->threadCount = n;
   tp->threadQueue = malloc(sizeof(pthread_t) * tp->threadCount);
+  pthread_mutex_init(&tp->workMutex, NULL);
+  pthread_cond_init(&tp->cond, NULL);
+
   for (int i = 0; i < tp->threadCount; i++) {
     tp->threadQueue[i] = thread;
     pthread_create(tp->threadQueue + i, NULL, threadPoolRoutine, tp);
