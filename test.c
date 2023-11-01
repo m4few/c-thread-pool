@@ -23,11 +23,7 @@ void *run() {
 }
 
 int main() {
-
-  pthread_t mainThread;
-  pthread_create(&mainThread, NULL, run, NULL);
-
-  threadPool tp;
+  threadPool tp = THREAD_POOL_INIT;
   threadPoolCreate(&tp, 4);
   work_t work = {w, NULL};
   work_t work2 = {w, NULL};
