@@ -7,13 +7,11 @@ void *threadPoolRoutine(void *arg) {
 
   // TODO: use pthread_cond_signal to avoid this
   while (1) {
-    usleep(20);
     pthread_mutex_lock(&(pool->workMutex));
+    pthread_cond_wait(&pool->cond, &pool->workMutex);
 
     if (pool->workQueuePtr == NULL) {
-      pthread_mutex_unlock(
-          &(pool->workMutex)); // TODO: this is also sort of bad but it would be
-                               // fixed by a signal
+      pthread_mutex_unlock(&(pool->workMutex));
       continue;
     }
 
@@ -23,6 +21,7 @@ void *threadPoolRoutine(void *arg) {
     pthread_mutex_unlock(&(pool->workMutex));
 
     job.function();
+    pthread_cond_broadcast(&pool->cond);
   }
   return NULL;
 }
@@ -49,18 +48,17 @@ int threadPoolRun(threadPool *tp) {
 }
 
 int threadPoolEnqueue(threadPool *tp, work_t *w) {
-
   if (tp->workQueuePtr == NULL) {
     tp->workQueuePtr = w;
-    return EXIT_SUCCESS;
+  } else {
+
+    work_t *node = tp->workQueuePtr;
+    while (node->next != NULL) {
+      node = node->next;
+    }
+
+    node->next = w;
   }
-
-  work_t *node = tp->workQueuePtr;
-  while (node->next != NULL) {
-    node = node->next;
-  }
-
-  node->next = w;
-
+  pthread_cond_broadcast(&tp->cond);
   return EXIT_SUCCESS;
 }
