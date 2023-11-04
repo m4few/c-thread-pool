@@ -1,6 +1,4 @@
 #include "tPool.h"
-#include <pthread.h>
-#include <stdlib.h>
 
 void *threadPoolRoutine(void *arg) {
   threadPool *pool = (threadPool *)arg;
