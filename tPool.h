@@ -9,7 +9,8 @@
   { NULL, PTHREAD_MUTEX_INITIALIZER, 0, NULL, PTHREAD_COND_INITIALIZER }
 
 struct work {
-  void *(*function)(void);
+  void *(*function)(void *);
+  void *arg;
   struct work *next;
 };
 

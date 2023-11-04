@@ -18,7 +18,8 @@ void *threadPoolRoutine(void *arg) {
 
     pthread_mutex_unlock(&(pool->workMutex));
 
-    job.function();
+    job.function(job.arg);
+
     pthread_cond_broadcast(&pool->cond);
   }
   return NULL;
